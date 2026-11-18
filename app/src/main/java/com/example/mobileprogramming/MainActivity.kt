@@ -4,22 +4,27 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
-import com.example.mobileprogramming.ui.home.HomeScreen
+import androidx.activity.viewModels
+import com.example.mobileprogramming.ui.home.HomeRoute
+import com.example.mobileprogramming.ui.home.HomeViewModel
 import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
 
 class MainActivity : ComponentActivity() {
+    private val homeViewModel: HomeViewModel by viewModels {
+        AppContainer.serviceViewModelFactory(::HomeViewModel)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MobileprogrammingTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreen(modifier = Modifier.padding(innerPadding))
-                }
+                HomeRoute(
+                    viewModel = homeViewModel,
+                    onServiceClick = { serviceId ->
+                        // TODO: Pass serviceId to the details destination once it is wired.
+                    }
+                )
             }
         }
     }
