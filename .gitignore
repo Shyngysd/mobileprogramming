@@ -8,8 +8,25 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
+build/
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local credentials and signing keys
+.env
+.env.*
+!.env.example
+secrets.properties
+keystore.properties
+key.properties
+credentials.json
+service-account*.json
+*-service-account.json
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
