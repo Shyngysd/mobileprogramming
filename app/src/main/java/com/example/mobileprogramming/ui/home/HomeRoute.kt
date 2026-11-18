@@ -16,6 +16,7 @@ fun HomeRoute(
         uiState = uiState,
         onServiceClick = onServiceClick,
         onRetry = viewModel::retry,
+        onSearchQueryChange = viewModel::onSearchQueryChange,
         modifier = modifier
     )
 }

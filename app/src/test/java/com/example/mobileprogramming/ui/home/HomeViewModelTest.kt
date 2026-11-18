@@ -1,5 +1,6 @@
 package com.example.mobileprogramming.ui.home
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.mobileprogramming.data.model.QueueService
 import com.example.mobileprogramming.data.repository.DemoQueueServices
@@ -46,7 +47,7 @@ class HomeViewModelTest {
     fun loadsOnStartAndObservesRepositoryUpdates() = runTest {
         val demoServices = DemoQueueServices.services
         repository.services.value = demoServices.take(1)
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, SavedStateHandle())
 
         assertTrue(viewModel.uiState.value.isLoading)
         assertEquals(repository.services.value, viewModel.uiState.value.services)
@@ -66,7 +67,7 @@ class HomeViewModelTest {
     @Test
     fun retryClearsErrorAndDoesNotStartAnotherRefreshWhileLoading() = runTest {
         repository.onRefresh = { error("Demo refresh failed") }
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, SavedStateHandle())
         runCurrent()
 
         assertFalse(viewModel.uiState.value.isLoading)
@@ -96,12 +97,58 @@ class HomeViewModelTest {
             refreshJob = currentCoroutineContext().job
             throw CancellationException("Refresh cancelled")
         }
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, SavedStateHandle())
         runCurrent()
 
         assertTrue(refreshJob.isCancelled)
         assertFalse(viewModel.uiState.value.isLoading)
         assertNull(viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun searchMatchesNamesAndLocationsAndClearingRestoresTheList() = runTest {
+        val services = DemoQueueServices.services
+        repository.services.value = services
+        viewModel = HomeViewModel(repository, SavedStateHandle())
+
+        viewModel.onSearchQueryChange("Help Desk")
+        runCurrent()
+        assertEquals(listOf("it-help-desk"), viewModel.uiState.value.services.map { it.id })
+
+        viewModel.onSearchQueryChange("  dInInG aReA  ")
+        runCurrent()
+        assertEquals(listOf("canteen"), viewModel.uiState.value.services.map { it.id })
+
+        viewModel.onSearchQueryChange("unknown service")
+        runCurrent()
+        assertTrue(viewModel.uiState.value.services.isEmpty())
+        assertEquals("unknown service", viewModel.uiState.value.searchQuery)
+
+        viewModel.onSearchQueryChange("")
+        runCurrent()
+        assertEquals(services, viewModel.uiState.value.services)
+        assertEquals(services, repository.services.value)
+        assertEquals("", viewModel.uiState.value.searchQuery)
+
+        viewModel.onSearchQueryChange("   ")
+        runCurrent()
+        assertEquals(services, viewModel.uiState.value.services)
+    }
+
+    @Test
+    fun savedQueryIsRestoredWithItsFilteredList() = runTest {
+        repository.services.value = DemoQueueServices.services
+        val savedState = SavedStateHandle()
+        viewModel = HomeViewModel(repository, savedState)
+        viewModel.onSearchQueryChange("  LIBRARY  ")
+        runCurrent()
+        viewModel.viewModelScope.cancel()
+
+        val restoredState = SavedStateHandle(savedState.keys().associateWith { savedState.get<String>(it) })
+        viewModel = HomeViewModel(repository, restoredState)
+
+        assertEquals("  LIBRARY  ", viewModel.uiState.value.searchQuery)
+        assertEquals(listOf("library"), viewModel.uiState.value.services.map { it.id })
     }
 
     private class FakeServiceRepository : ServiceRepository {

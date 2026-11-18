@@ -5,7 +5,8 @@ import com.example.mobileprogramming.data.model.QueueService
 data class HomeUiState(
     val services: List<QueueService> = emptyList(),
     val isLoading: Boolean = true,
-    val error: HomeLoadError? = null
+    val error: HomeLoadError? = null,
+    val searchQuery: String = ""
 )
 
 enum class HomeLoadError {

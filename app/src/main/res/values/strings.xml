@@ -4,6 +4,9 @@
     <string name="home_load_error">Could not load services.</string>
     <string name="home_retry">Retry</string>
     <string name="home_no_services">No services available.</string>
+    <string name="home_search_services">Search services</string>
+    <string name="home_clear_search">Clear search</string>
+    <string name="home_no_search_results">No services found</string>
     <string name="service_open">Open</string>
     <string name="service_closed">Closed</string>
 

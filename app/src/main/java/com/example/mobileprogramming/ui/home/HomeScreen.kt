@@ -3,17 +3,29 @@ package com.example.mobileprogramming.ui.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mobileprogramming.R
@@ -36,15 +49,28 @@ fun HomeScreen(
     uiState: HomeUiState,
     onServiceClick: (String) -> Unit,
     onRetry: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val error = uiState.error
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().imePadding(),
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.app_name)) })
+            Surface {
+                Column {
+                    TopAppBar(title = { Text(stringResource(R.string.app_name)) })
+                    ServiceSearchField(
+                        query = uiState.searchQuery,
+                        onQueryChange = onSearchQueryChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+            }
         }
     ) { innerPadding ->
         LazyColumn(
@@ -86,7 +112,18 @@ fun HomeScreen(
                     }
                 }
             } else if (uiState.services.isEmpty()) {
-                item { Text(stringResource(R.string.home_no_services)) }
+                item {
+                    if (uiState.searchQuery.isNotBlank()) {
+                        Column {
+                            Text(stringResource(R.string.home_no_search_results))
+                            TextButton(onClick = { onSearchQueryChange("") }) {
+                                Text(stringResource(R.string.home_clear_search))
+                            }
+                        }
+                    } else {
+                        Text(stringResource(R.string.home_no_services))
+                    }
+                }
             }
 
             items(uiState.services, key = { service -> service.id }) { service ->
@@ -96,14 +133,51 @@ fun HomeScreen(
     }
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 840)
+@Composable
+private fun ServiceSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        label = { Text(stringResource(R.string.home_search_services)) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.home_clear_search))
+                }
+            }
+        }
+    )
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 900)
 @Composable
 private fun HomeScreenPreview() {
     MobileprogrammingTheme {
         HomeScreen(
             uiState = HomeUiState(services = DemoQueueServices.services, isLoading = false),
             onServiceClick = {},
-            onRetry = {}
+            onRetry = {},
+            onSearchQueryChange = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 440)
+@Composable
+private fun HomeScreenNoResultsPreview() {
+    MobileprogrammingTheme {
+        HomeScreen(
+            uiState = HomeUiState(isLoading = false, searchQuery = "Unknown service"),
+            onServiceClick = {},
+            onRetry = {},
+            onSearchQueryChange = {}
         )
     }
 }
