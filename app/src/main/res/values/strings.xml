@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">SDU Queue</string>
+    <string name="service_open">Open</string>
+    <string name="service_closed">Closed</string>
+
+    <plurals name="service_people_waiting">
+        <item quantity="one">%1$d person waiting</item>
+        <item quantity="other">%1$d people waiting</item>
+    </plurals>
+
+    <plurals name="service_estimated_wait">
+        <item quantity="one">Estimated wait: %1$d minute</item>
+        <item quantity="other">Estimated wait: %1$d minutes</item>
+    </plurals>
 </resources>
