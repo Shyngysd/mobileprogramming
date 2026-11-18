@@ -17,6 +17,9 @@ fun HomeRoute(
         onServiceClick = onServiceClick,
         onRetry = viewModel::retry,
         onSearchQueryChange = viewModel::onSearchQueryChange,
+        onCategoryChange = viewModel::onCategoryChange,
+        onOpenOnlyChange = viewModel::onOpenOnlyChange,
+        onResetFilters = viewModel::resetFilters,
         modifier = modifier
     )
 }

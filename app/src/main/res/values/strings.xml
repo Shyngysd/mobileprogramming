@@ -7,6 +7,13 @@
     <string name="home_search_services">Search services</string>
     <string name="home_clear_search">Clear search</string>
     <string name="home_no_search_results">No services found</string>
+    <string name="home_category_all">All</string>
+    <string name="home_category_student_services">Student Services</string>
+    <string name="home_category_it_support">IT Support</string>
+    <string name="home_category_library">Library</string>
+    <string name="home_category_dining">Dining</string>
+    <string name="home_open_only">Open only</string>
+    <string name="home_reset_filters">Reset filters</string>
     <string name="service_open">Open</string>
     <string name="service_closed">Closed</string>
 

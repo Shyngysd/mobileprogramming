@@ -3,6 +3,7 @@ package com.example.mobileprogramming.ui.home
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.mobileprogramming.data.model.QueueService
+import com.example.mobileprogramming.data.model.ServiceCategory
 import com.example.mobileprogramming.data.repository.DemoQueueServices
 import com.example.mobileprogramming.data.repository.ServiceRepository
 import kotlinx.coroutines.CancellationException
@@ -149,6 +150,67 @@ class HomeViewModelTest {
 
         assertEquals("  LIBRARY  ", viewModel.uiState.value.searchQuery)
         assertEquals(listOf("library"), viewModel.uiState.value.services.map { it.id })
+    }
+
+    @Test
+    fun searchCategoryAndOpenOnlyApplyTogether() = runTest {
+        repository.services.value = DemoQueueServices.services
+        viewModel = HomeViewModel(repository, SavedStateHandle())
+
+        viewModel.onSearchQueryChange(" demo campus ")
+        viewModel.onCategoryChange(ServiceCategory.LIBRARY)
+        viewModel.onOpenOnlyChange(true)
+        runCurrent()
+        assertEquals(listOf("library"), viewModel.uiState.value.services.map { it.id })
+
+        viewModel.onSearchQueryChange("canteen")
+        runCurrent()
+        assertTrue(viewModel.uiState.value.services.isEmpty())
+
+        viewModel.onCategoryChange(ServiceCategory.DINING)
+        runCurrent()
+        assertTrue(viewModel.uiState.value.services.isEmpty())
+        assertTrue(viewModel.uiState.value.hasUnfilteredServices)
+
+        viewModel.onOpenOnlyChange(false)
+        runCurrent()
+        assertEquals(listOf("canteen"), viewModel.uiState.value.services.map { it.id })
+    }
+
+    @Test
+    fun resetClearsAllConditionsAndRestoresTheOriginalList() = runTest {
+        val services = DemoQueueServices.services
+        repository.services.value = services
+        val savedState = SavedStateHandle()
+        viewModel = HomeViewModel(repository, savedState)
+
+        viewModel.onSearchQueryChange("canteen")
+        viewModel.onCategoryChange(ServiceCategory.DINING)
+        viewModel.onOpenOnlyChange(true)
+        runCurrent()
+        assertTrue(viewModel.uiState.value.hasActiveFilters)
+        assertTrue(viewModel.uiState.value.services.isEmpty())
+
+        viewModel.resetFilters()
+        runCurrent()
+
+        val state = viewModel.uiState.value
+        assertEquals("", state.searchQuery)
+        assertNull(state.selectedCategory)
+        assertFalse(state.openOnly)
+        assertFalse(state.hasActiveFilters)
+        assertEquals(services, state.services)
+        assertEquals(services, repository.services.value)
+
+        viewModel.viewModelScope.cancel()
+        viewModel = HomeViewModel(repository, savedState)
+        assertEquals("", viewModel.uiState.value.searchQuery)
+
+        repository.services.value = emptyList()
+        viewModel.onCategoryChange(ServiceCategory.LIBRARY)
+        runCurrent()
+        assertTrue(viewModel.uiState.value.services.isEmpty())
+        assertFalse(viewModel.uiState.value.hasUnfilteredServices)
     }
 
     private class FakeServiceRepository : ServiceRepository {
