@@ -12,10 +12,17 @@ data class HomeUiState(
     val openOnly: Boolean = false,
     val hasUnfilteredServices: Boolean = services.isNotEmpty()
 ) {
+    val isInitialLoading: Boolean
+        get() = isLoading && !hasUnfilteredServices
+
+    val isRefreshing: Boolean
+        get() = isLoading && hasUnfilteredServices
+
     val hasActiveFilters: Boolean
         get() = searchQuery.isNotBlank() || selectedCategory != null || openOnly
 }
 
 enum class HomeLoadError {
-    SERVICES_LOAD_FAILED
+    SERVICES_LOAD_FAILED,
+    SERVICES_REFRESH_FAILED
 }

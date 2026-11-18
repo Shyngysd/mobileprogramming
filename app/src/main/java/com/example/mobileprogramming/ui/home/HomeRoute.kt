@@ -8,14 +8,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun HomeRoute(
     viewModel: HomeViewModel,
-    onServiceClick: (String) -> Unit,
+    onServiceClick: ((String) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     HomeScreen(
         uiState = uiState,
         onServiceClick = onServiceClick,
-        onRetry = viewModel::retry,
+        onRefresh = viewModel::retry,
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onCategoryChange = viewModel::onCategoryChange,
         onOpenOnlyChange = viewModel::onOpenOnlyChange,

@@ -60,8 +60,8 @@ import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onServiceClick: (String) -> Unit,
-    onRetry: () -> Unit,
+    onServiceClick: ((String) -> Unit)?,
+    onRefresh: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onCategoryChange: (ServiceCategory?) -> Unit,
     onOpenOnlyChange: (Boolean) -> Unit,
@@ -76,7 +76,16 @@ fun HomeScreen(
         topBar = {
             Surface {
                 Column {
-                    TopAppBar(title = { Text(stringResource(R.string.app_name)) })
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.app_name)) },
+                        actions = {
+                            if (!uiState.isLoading && error == null) {
+                                TextButton(onClick = onRefresh) {
+                                    Text(stringResource(R.string.home_refresh))
+                                }
+                            }
+                        }
+                    )
                     ServiceSearchField(
                         query = uiState.searchQuery,
                         onQueryChange = onSearchQueryChange,
@@ -123,20 +132,36 @@ fun HomeScreen(
             }
 
             if (uiState.isLoading) {
-                item { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) }
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val message = if (uiState.isRefreshing) {
+                            R.string.home_refreshing
+                        } else {
+                            R.string.home_loading
+                        }
+                        Text(stringResource(message))
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                }
             } else if (error != null) {
                 item {
                     Column {
                         val message = when (error) {
                             HomeLoadError.SERVICES_LOAD_FAILED -> R.string.home_load_error
+                            HomeLoadError.SERVICES_REFRESH_FAILED -> R.string.home_refresh_error
                         }
                         Text(stringResource(message), color = MaterialTheme.colorScheme.error)
-                        TextButton(onClick = onRetry) {
+                        TextButton(onClick = onRefresh) {
                             Text(stringResource(R.string.home_retry))
                         }
                     }
                 }
-            } else if (uiState.services.isEmpty()) {
+            }
+
+            if (
+                uiState.services.isEmpty() && !uiState.isInitialLoading &&
+                (error == null || uiState.hasUnfilteredServices)
+            ) {
                 item {
                     if (uiState.hasUnfilteredServices) {
                         Column {
@@ -154,7 +179,10 @@ fun HomeScreen(
             }
 
             items(uiState.services, key = { service -> service.id }) { service ->
-                ServiceCard(service = service, onClick = { onServiceClick(service.id) })
+                ServiceCard(
+                    service = service,
+                    onClick = onServiceClick?.let { callback -> { callback(service.id) } }
+                )
             }
         }
     }
@@ -246,36 +274,61 @@ private fun ServiceSearchField(
     )
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 900)
+@Preview(name = "Services", showBackground = true, widthDp = 360, heightDp = 900)
 @Composable
-private fun HomeScreenPreview() {
-    MobileprogrammingTheme {
-        HomeScreen(
-            uiState = HomeUiState(services = DemoQueueServices.services, isLoading = false),
-            onServiceClick = {},
-            onRetry = {},
-            onSearchQueryChange = {},
-            onCategoryChange = {},
-            onOpenOnlyChange = {},
-            onResetFilters = {}
-        )
-    }
-}
+private fun HomeScreenPreview() = PreviewHomeScreen(
+    HomeUiState(services = DemoQueueServices.services, isLoading = false)
+)
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 600)
+@Preview(name = "No matches", showBackground = true, widthDp = 320, heightDp = 600)
 @Composable
-private fun HomeScreenNoResultsPreview() {
+private fun HomeScreenNoResultsPreview() = PreviewHomeScreen(
+    HomeUiState(
+        isLoading = false,
+        searchQuery = "Canteen",
+        selectedCategory = ServiceCategory.DINING,
+        openOnly = true,
+        hasUnfilteredServices = true
+    )
+)
+
+@Preview(name = "Loading", showBackground = true, widthDp = 360, heightDp = 540)
+@Composable
+private fun HomeScreenLoadingPreview() = PreviewHomeScreen(HomeUiState())
+
+@Preview(name = "Empty source", showBackground = true, widthDp = 360, heightDp = 540)
+@Composable
+private fun HomeScreenEmptyPreview() = PreviewHomeScreen(HomeUiState(isLoading = false))
+
+@Preview(name = "Load error", showBackground = true, widthDp = 360, heightDp = 540)
+@Composable
+private fun HomeScreenLoadErrorPreview() = PreviewHomeScreen(
+    HomeUiState(isLoading = false, error = HomeLoadError.SERVICES_LOAD_FAILED)
+)
+
+@Preview(name = "Refreshing", showBackground = true, widthDp = 360, heightDp = 700)
+@Composable
+private fun HomeScreenRefreshingPreview() = PreviewHomeScreen(
+    HomeUiState(services = DemoQueueServices.services.take(1))
+)
+
+@Preview(name = "Refresh error", showBackground = true, widthDp = 360, heightDp = 700)
+@Composable
+private fun HomeScreenRefreshErrorPreview() = PreviewHomeScreen(
+    HomeUiState(
+        services = DemoQueueServices.services.take(1),
+        isLoading = false,
+        error = HomeLoadError.SERVICES_REFRESH_FAILED
+    )
+)
+
+@Composable
+private fun PreviewHomeScreen(uiState: HomeUiState) {
     MobileprogrammingTheme {
         HomeScreen(
-            uiState = HomeUiState(
-                isLoading = false,
-                searchQuery = "Canteen",
-                selectedCategory = ServiceCategory.DINING,
-                openOnly = true,
-                hasUnfilteredServices = true
-            ),
-            onServiceClick = {},
-            onRetry = {},
+            uiState = uiState,
+            onServiceClick = null,
+            onRefresh = {},
             onSearchQueryChange = {},
             onCategoryChange = {},
             onOpenOnlyChange = {},

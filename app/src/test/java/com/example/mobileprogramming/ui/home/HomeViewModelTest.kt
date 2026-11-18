@@ -213,6 +213,65 @@ class HomeViewModelTest {
         assertFalse(viewModel.uiState.value.hasUnfilteredServices)
     }
 
+    @Test
+    fun firstLoadCanCompleteWithAnEmptySource() = runTest {
+        val firstLoad = CompletableDeferred<Unit>()
+        repository.onRefresh = { firstLoad.await() }
+        viewModel = HomeViewModel(repository, SavedStateHandle())
+        runCurrent()
+
+        assertTrue(viewModel.uiState.value.isInitialLoading)
+        assertFalse(viewModel.uiState.value.isRefreshing)
+
+        firstLoad.complete(Unit)
+        runCurrent()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
+        assertFalse(state.hasUnfilteredServices)
+        assertTrue(state.services.isEmpty())
+        assertNull(state.error)
+    }
+
+    @Test
+    fun refreshKeepsFilteredServicesOnFailureAndRetryPublishesNewData() = runTest {
+        val demoServices = DemoQueueServices.services
+        val library = demoServices.first { it.id == "library" }
+        val updatedLibrary = library.copy(peopleInQueue = library.peopleInQueue + 1)
+        repository.services.value = demoServices
+        viewModel = HomeViewModel(repository, SavedStateHandle())
+        viewModel.onSearchQueryChange("library")
+        runCurrent()
+
+        val refresh = CompletableDeferred<Unit>()
+        repository.onRefresh = { refresh.await() }
+        viewModel.retry()
+        runCurrent()
+
+        assertTrue(viewModel.uiState.value.isRefreshing)
+        assertFalse(viewModel.uiState.value.isInitialLoading)
+        assertEquals(listOf(library), viewModel.uiState.value.services)
+
+        refresh.completeExceptionally(IllegalStateException("Demo refresh failed"))
+        runCurrent()
+
+        assertFalse(viewModel.uiState.value.isLoading)
+        assertEquals(HomeLoadError.SERVICES_REFRESH_FAILED, viewModel.uiState.value.error)
+        assertEquals(listOf(library), viewModel.uiState.value.services)
+
+        repository.onRefresh = {
+            repository.services.value = demoServices.map { service ->
+                if (service.id == library.id) updatedLibrary else service
+            }
+        }
+        viewModel.retry()
+        runCurrent()
+
+        assertNull(viewModel.uiState.value.error)
+        assertEquals("library", viewModel.uiState.value.searchQuery)
+        assertEquals(listOf(updatedLibrary), viewModel.uiState.value.services)
+    }
+
     private class FakeServiceRepository : ServiceRepository {
         override val services = MutableStateFlow<List<QueueService>>(emptyList())
         var onRefresh: suspend () -> Unit = {}

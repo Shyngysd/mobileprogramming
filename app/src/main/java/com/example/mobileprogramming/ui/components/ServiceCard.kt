@@ -2,6 +2,7 @@ package com.example.mobileprogramming.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -22,13 +23,13 @@ import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
 @Composable
 fun ServiceCard(
     service: QueueService,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     val waitMinutes = estimateWaitMinutes(service)
     val status = if (service.isOpen) R.string.service_open else R.string.service_closed
 
-    OutlinedCard(onClick = onClick, modifier = modifier.fillMaxWidth()) {
+    val content: @Composable ColumnScope.() -> Unit = {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -65,6 +66,13 @@ fun ServiceCard(
                 }
             }
         }
+    }
+
+    val cardModifier = modifier.fillMaxWidth()
+    if (onClick == null) {
+        OutlinedCard(modifier = cardModifier, content = content)
+    } else {
+        OutlinedCard(onClick = onClick, modifier = cardModifier, content = content)
     }
 }
 

@@ -1,7 +1,11 @@
 <resources>
     <string name="app_name">SDU Queue</string>
     <string name="home_demo_data">Demo data</string>
+    <string name="home_loading">Loading services…</string>
+    <string name="home_refreshing">Refreshing services…</string>
+    <string name="home_refresh">Refresh</string>
     <string name="home_load_error">Could not load services.</string>
+    <string name="home_refresh_error">Could not refresh services. Previous data is still available.</string>
     <string name="home_retry">Retry</string>
     <string name="home_no_services">No services available.</string>
     <string name="home_search_services">Search services</string>

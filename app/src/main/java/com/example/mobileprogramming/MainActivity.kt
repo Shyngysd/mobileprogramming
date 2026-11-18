@@ -19,12 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MobileprogrammingTheme {
-                HomeRoute(
-                    viewModel = homeViewModel,
-                    onServiceClick = { serviceId ->
-                        // TODO: Pass serviceId to the details destination once it is wired.
-                    }
-                )
+                HomeRoute(viewModel = homeViewModel, onServiceClick = null)
             }
         }
     }

@@ -75,7 +75,11 @@ class HomeViewModel(
             } catch (exception: CancellationException) {
                 throw exception
             } catch (_: Exception) {
-                error = HomeLoadError.SERVICES_LOAD_FAILED
+                error = if (repository.services.value.isEmpty()) {
+                    HomeLoadError.SERVICES_LOAD_FAILED
+                } else {
+                    HomeLoadError.SERVICES_REFRESH_FAILED
+                }
             } finally {
                 refreshState.value = RefreshState(isLoading = false, error = error)
             }
