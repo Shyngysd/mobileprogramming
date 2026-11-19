@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mobileprogramming.AppContainer
+import com.example.mobileprogramming.ui.details.JoinQueueResult
 import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 import com.example.mobileprogramming.ui.details.ServiceDetailsScreen
 import com.example.mobileprogramming.ui.explore.ExploreRoute
@@ -41,8 +42,11 @@ fun QueueNavigation(
         startDestination = "home",
         modifier = Modifier.statusBarsPadding()
     ) {
+
+        // Home Screen
         composable("home") {
             Column(modifier = Modifier.fillMaxSize()) {
+
                 Button(
                     onClick = {
                         navController.navigate("explore")
@@ -64,8 +68,10 @@ fun QueueNavigation(
             }
         }
 
+        // Explore Screen
         composable("explore") {
             Column(modifier = Modifier.fillMaxSize()) {
+
                 Button(
                     onClick = {
                         navController.navigateUp()
@@ -74,10 +80,13 @@ fun QueueNavigation(
                     Text("Back to Home")
                 }
 
-                ExploreRoute(viewModel = exploreViewModel)
+                ExploreRoute(
+                    viewModel = exploreViewModel
+                )
             }
         }
 
+        // Service Details Screen
         composable(
             route = "details/{serviceId}",
             arguments = listOf(
@@ -101,14 +110,18 @@ fun QueueNavigation(
                     navController.navigateUp()
                 },
                 onJoinQueueClick = {
-                    if (service != null && service.isOpen && ticket == null) {
-                        ticketViewModel.joinQueue(service)
-                        navController.navigate("ticket")
+                    if (service != null) {
+                        val result = ticketViewModel.joinQueue(service)
+
+                        if (result == JoinQueueResult.SUCCESS) {
+                            navController.navigate("ticket")
+                        }
                     }
                 }
             )
         }
 
+        // Ticket Confirmation Screen
         composable("ticket") {
             TicketScreen(
                 ticket = ticket,

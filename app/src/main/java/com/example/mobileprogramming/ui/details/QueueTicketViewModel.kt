@@ -8,15 +8,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+enum class JoinQueueResult {
+    SUCCESS,
+    ALREADY_HAS_TICKET,
+    SERVICE_CLOSED
+}
+
 class QueueTicketViewModel : ViewModel() {
 
     private val _ticket = MutableStateFlow<QueueTicket?>(null)
 
     val ticket: StateFlow<QueueTicket?> = _ticket.asStateFlow()
 
-    fun joinQueue(service: QueueService) {
-        if (!service.isOpen || _ticket.value != null) {
-            return
+    fun joinQueue(service: QueueService): JoinQueueResult {
+
+        if (!service.isOpen) {
+            return JoinQueueResult.SERVICE_CLOSED
+        }
+
+        if (_ticket.value != null) {
+            return JoinQueueResult.ALREADY_HAS_TICKET
         }
 
         val ticketNumber = service.peopleInQueue + 1
@@ -26,5 +37,7 @@ class QueueTicketViewModel : ViewModel() {
             serviceId = service.id,
             serviceName = service.name
         )
+
+        return JoinQueueResult.SUCCESS
     }
 }
