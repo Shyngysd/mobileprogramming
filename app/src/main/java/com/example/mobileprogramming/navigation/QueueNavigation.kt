@@ -9,22 +9,24 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mobileprogramming.AppContainer
+import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 import com.example.mobileprogramming.ui.details.ServiceDetailsScreen
 import com.example.mobileprogramming.ui.explore.ExploreRoute
 import com.example.mobileprogramming.ui.explore.ExploreViewModel
 import com.example.mobileprogramming.ui.home.HomeRoute
 import com.example.mobileprogramming.ui.home.HomeViewModel
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.mobileprogramming.ui.details.QueueTicketViewModel
+import com.example.mobileprogramming.ui.ticket.TicketScreen
+
 @Composable
 fun QueueNavigation(
     homeViewModel: HomeViewModel,
@@ -32,8 +34,8 @@ fun QueueNavigation(
     ticketViewModel: QueueTicketViewModel
 ) {
     val navController = rememberNavController()
-
     val ticket by ticketViewModel.ticket.collectAsStateWithLifecycle()
+
     NavHost(
         navController = navController,
         startDestination = "home",
@@ -72,9 +74,7 @@ fun QueueNavigation(
                     Text("Back to Home")
                 }
 
-                ExploreRoute(
-                    viewModel = exploreViewModel
-                )
+                ExploreRoute(viewModel = exploreViewModel)
             }
         }
 
@@ -101,9 +101,19 @@ fun QueueNavigation(
                     navController.navigateUp()
                 },
                 onJoinQueueClick = {
-                    if (service != null) {
+                    if (service != null && service.isOpen && ticket == null) {
                         ticketViewModel.joinQueue(service)
+                        navController.navigate("ticket")
                     }
+                }
+            )
+        }
+
+        composable("ticket") {
+            TicketScreen(
+                ticket = ticket,
+                onBackClick = {
+                    navController.navigateUp()
                 }
             )
         }
