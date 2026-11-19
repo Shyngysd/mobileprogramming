@@ -137,13 +137,21 @@ fun QueueNavigation(
             )
         }
 
+
         composable("ticket") {
+
+            val service = ticket?.serviceId?.let {
+                AppContainer.serviceRepository.getServiceById(it)
+            }
+
             TicketScreen(
                 ticket = ticket,
+                service = service,
                 onBackClick = {
                     navController.navigateUp()
                 }
             )
         }
+
     }
 }

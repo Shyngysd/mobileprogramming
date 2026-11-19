@@ -12,11 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.mobileprogramming.data.model.QueueService
 import com.example.mobileprogramming.data.model.QueueTicket
 
 @Composable
 fun TicketScreen(
     ticket: QueueTicket?,
+    service: QueueService?,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -37,10 +39,39 @@ fun TicketScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Successfully joined the queue!")
+                    Text("Your ticket is active")
+
                     Text("Ticket Number: #${ticket.ticketNumber}")
+
                     Text("Service: ${ticket.serviceName}")
+
                     Text("Status: Active")
+
+                    if (service != null) {
+                        Text(
+                            "People in queue: ${service.peopleInQueue}"
+                        )
+
+                        if (
+                            service.isOpen &&
+                            service.peopleInQueue >= 0 &&
+                            service.averageServiceMinutes > 0
+                        ) {
+                            val waitMinutes =
+                                service.peopleInQueue.toLong() *
+                                        service.averageServiceMinutes.toLong()
+
+                            Text(
+                                "Estimated wait: $waitMinutes minutes"
+                            )
+                        } else {
+                            Text("Estimated wait: Not available")
+                        }
+
+                        Text("Location: ${service.location}")
+                    } else {
+                        Text("Queue information unavailable")
+                    }
                 }
             }
         }
