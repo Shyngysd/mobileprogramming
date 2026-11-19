@@ -44,10 +44,10 @@ fun QueueNavigation(
         modifier = Modifier.statusBarsPadding()
     ) {
 
-        // Home Screen
         composable("home") {
-            Column(modifier = Modifier.fillMaxSize()) {
-
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
                 Button(
                     onClick = {
                         navController.navigate("explore")
@@ -59,7 +59,6 @@ fun QueueNavigation(
                     Text("Explore Services")
                 }
 
-                // New feature for commit 8
                 if (ticket != null) {
                     Button(
                         onClick = {
@@ -83,10 +82,10 @@ fun QueueNavigation(
             }
         }
 
-        // Explore Screen
         composable("explore") {
-            Column(modifier = Modifier.fillMaxSize()) {
-
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
                 Button(
                     onClick = {
                         navController.navigateUp()
@@ -101,7 +100,6 @@ fun QueueNavigation(
             }
         }
 
-        // Service Details Screen
         composable(
             route = "details/{serviceId}",
             arguments = listOf(
@@ -132,11 +130,13 @@ fun QueueNavigation(
                             navController.navigate("ticket")
                         }
                     }
+                },
+                onViewTicketClick = {
+                    navController.navigate("ticket")
                 }
             )
         }
 
-        // Ticket Confirmation Screen
         composable("ticket") {
             TicketScreen(
                 ticket = ticket,

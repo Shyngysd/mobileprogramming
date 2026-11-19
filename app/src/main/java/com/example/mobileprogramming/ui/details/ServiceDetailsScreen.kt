@@ -20,7 +20,8 @@ fun ServiceDetailsScreen(
     service: QueueService?,
     ticket: QueueTicket?,
     onBackClick: () -> Unit,
-    onJoinQueueClick: () -> Unit
+    onJoinQueueClick: () -> Unit,
+    onViewTicketClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -32,62 +33,62 @@ fun ServiceDetailsScreen(
             Text("Back")
         }
 
-        Text("Service Details")
-
         if (service == null) {
             Text("Service not found")
         } else {
+            Text("Service Details")
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(service.name)
                     Text(service.description)
                     Text("Location: ${service.location}")
 
-                    Text(
-                        if (service.isOpen) "Status: Open"
-                        else "Status: Closed"
-                    )
+                    if (service.isOpen) {
+                        Text("Status: Open")
+                    } else {
+                        Text("Status: Closed")
+                    }
 
                     Text("People in queue: ${service.peopleInQueue}")
 
-                    val waitTime = service.peopleInQueue.toLong() *
-                            service.averageServiceMinutes
+                    val waitMinutes =
+                        service.peopleInQueue.toLong() *
+                                service.averageServiceMinutes.toLong()
 
-                    Text(
-                        if (service.isOpen &&
-                            service.peopleInQueue >= 0 &&
-                            service.averageServiceMinutes > 0
-                        ) {
-                            "Estimated wait: $waitTime minutes"
-                        } else {
-                            "Estimated wait: unavailable"
-                        }
-                    )
+                    if (
+                        service.isOpen &&
+                        service.peopleInQueue >= 0 &&
+                        service.averageServiceMinutes > 0
+                    ) {
+                        Text("Estimated wait: $waitMinutes minutes")
+                    } else {
+                        Text("Estimated wait: Not available")
+                    }
                 }
             }
 
-            if (ticket != null && ticket.serviceId == service.id) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Ticket created successfully!")
-                        Text("Your ticket number: #${ticket.ticketNumber}")
-                        Text("Service: ${ticket.serviceName}")
-                    }
+            if (ticket?.serviceId == service.id) {
+                Text("You already have a ticket for this service.")
+
+                Button(
+                    onClick = onViewTicketClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("View My Ticket #${ticket.ticketNumber}")
                 }
+            } else if (ticket != null) {
+                Text("You already have an active ticket for another service.")
             } else {
                 Button(
                     onClick = onJoinQueueClick,
-                    enabled = service.isOpen && ticket == null,
+                    enabled = service.isOpen,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Join Queue")
-                }
-
-                if (ticket != null) {
-                    Text("You already have an active ticket.")
                 }
             }
         }
