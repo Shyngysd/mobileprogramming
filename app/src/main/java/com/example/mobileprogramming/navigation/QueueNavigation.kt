@@ -22,14 +22,18 @@ import com.example.mobileprogramming.ui.explore.ExploreRoute
 import com.example.mobileprogramming.ui.explore.ExploreViewModel
 import com.example.mobileprogramming.ui.home.HomeRoute
 import com.example.mobileprogramming.ui.home.HomeViewModel
-
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 @Composable
 fun QueueNavigation(
     homeViewModel: HomeViewModel,
-    exploreViewModel: ExploreViewModel
+    exploreViewModel: ExploreViewModel,
+    ticketViewModel: QueueTicketViewModel
 ) {
     val navController = rememberNavController()
 
+    val ticket by ticketViewModel.ticket.collectAsStateWithLifecycle()
     NavHost(
         navController = navController,
         startDestination = "home",
@@ -92,10 +96,14 @@ fun QueueNavigation(
 
             ServiceDetailsScreen(
                 service = service,
+                ticket = ticket,
                 onBackClick = {
                     navController.navigateUp()
                 },
                 onJoinQueueClick = {
+                    if (service != null) {
+                        ticketViewModel.joinQueue(service)
+                    }
                 }
             )
         }

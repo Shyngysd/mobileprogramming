@@ -13,10 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.mobileprogramming.data.model.QueueService
+import com.example.mobileprogramming.data.model.QueueTicket
 
 @Composable
 fun ServiceDetailsScreen(
     service: QueueService?,
+    ticket: QueueTicket?,
     onBackClick: () -> Unit,
     onJoinQueueClick: () -> Unit
 ) {
@@ -35,9 +37,7 @@ fun ServiceDetailsScreen(
         if (service == null) {
             Text("Service not found")
         } else {
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(modifier = Modifier.fillMaxWidth()) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -53,9 +53,8 @@ fun ServiceDetailsScreen(
 
                     Text("People in queue: ${service.peopleInQueue}")
 
-                    val waitTime =
-                        service.peopleInQueue.toLong() *
-                                service.averageServiceMinutes
+                    val waitTime = service.peopleInQueue.toLong() *
+                            service.averageServiceMinutes
 
                     Text(
                         if (service.isOpen &&
@@ -70,12 +69,26 @@ fun ServiceDetailsScreen(
                 }
             }
 
-            Button(
-                onClick = onJoinQueueClick,
-                enabled = service.isOpen,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Join Queue")
+            if (ticket != null && ticket.serviceId == service.id) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Ticket created successfully!")
+                        Text("Your ticket number: #${ticket.ticketNumber}")
+                        Text("Service: ${ticket.serviceName}")
+                    }
+                }
+            } else {
+                Button(
+                    onClick = onJoinQueueClick,
+                    enabled = service.isOpen && ticket == null,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Join Queue")
+                }
+
+                if (ticket != null) {
+                    Text("You already have an active ticket.")
+                }
             }
         }
     }

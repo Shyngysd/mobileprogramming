@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import com.example.mobileprogramming.navigation.QueueNavigation
+import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 import com.example.mobileprogramming.ui.explore.ExploreViewModel
 import com.example.mobileprogramming.ui.home.HomeViewModel
 import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
@@ -21,6 +22,8 @@ class MainActivity : ComponentActivity() {
         AppContainer.serviceViewModelFactory(::ExploreViewModel)
     }
 
+    private val ticketViewModel: QueueTicketViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,7 +32,8 @@ class MainActivity : ComponentActivity() {
             MobileprogrammingTheme {
                 QueueNavigation(
                     homeViewModel = homeViewModel,
-                    exploreViewModel = exploreViewModel
+                    exploreViewModel = exploreViewModel,
+                    ticketViewModel = ticketViewModel
                 )
             }
         }
