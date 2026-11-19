@@ -35,6 +35,7 @@ fun QueueNavigation(
     ticketViewModel: QueueTicketViewModel
 ) {
     val navController = rememberNavController()
+
     val ticket by ticketViewModel.ticket.collectAsStateWithLifecycle()
 
     NavHost(
@@ -56,6 +57,20 @@ fun QueueNavigation(
                         .padding(horizontal = 16.dp)
                 ) {
                     Text("Explore Services")
+                }
+
+                // New feature for commit 8
+                if (ticket != null) {
+                    Button(
+                        onClick = {
+                            navController.navigate("ticket")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text("My Active Ticket #${ticket?.ticketNumber}")
+                    }
                 }
 
                 HomeRoute(
