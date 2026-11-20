@@ -47,12 +47,20 @@ fun MyTicketsScreen(
             text = "My Tickets",
             style = MaterialTheme.typography.headlineMedium
         )
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(tickets, key = { it.id }) { ticket ->
-                TicketCard(
-                    ticket = ticket,
-                    onCancelClick = { onCancelTicket(ticket.id) }
-                )
+        if (tickets.isEmpty()) {
+            Text(
+                text = "You have no active tickets.\nJoin a queue to get one.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(tickets, key = { it.id }) { ticket ->
+                    TicketCard(
+                        ticket = ticket,
+                        onCancelClick = { onCancelTicket(ticket.id) }
+                    )
+                }
             }
         }
     }
@@ -69,5 +77,13 @@ private fun MyTicketsScreenPreview() {
             ),
             onCancelTicket = {}
         )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+private fun MyTicketsScreenEmptyPreview() {
+    MobileprogrammingTheme {
+        MyTicketsScreen(tickets = emptyList(), onCancelTicket = {})
     }
 }
