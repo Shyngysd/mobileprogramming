@@ -1,4 +1,3 @@
-
 package com.example.mobileprogramming
 
 import android.os.Bundle
@@ -6,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.example.mobileprogramming.data.local.TicketStorage // ← NEW
 import com.example.mobileprogramming.navigation.QueueNavigation
 import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 import com.example.mobileprogramming.ui.explore.ExploreViewModel
@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        AppContainer.ticketRepository.attachStorage(TicketStorage(applicationContext)) // ← NEW
 
         setContent {
             MobileprogrammingTheme {
