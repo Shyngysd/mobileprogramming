@@ -14,6 +14,9 @@ class MyTicketsViewModel(
 
     val tickets: StateFlow<List<Ticket>> = repository.tickets
 
+    fun cancelTicket(ticketId: String) {
+        repository.cancelTicket(ticketId)
+    }
     companion object {
         val Factory = viewModelFactory {
             initializer { MyTicketsViewModel(AppContainer.ticketRepository) }

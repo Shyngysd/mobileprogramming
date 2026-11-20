@@ -26,7 +26,7 @@ fun MyTicketsRoute(
     val tickets by viewModel.tickets.collectAsStateWithLifecycle()
     MyTicketsScreen(
         tickets = tickets,
-        onCancelTicket = { },
+        onCancelTicket = viewModel::cancelTicket,
         modifier = modifier
     )
 }
