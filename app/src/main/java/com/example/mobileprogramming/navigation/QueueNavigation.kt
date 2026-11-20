@@ -1,12 +1,14 @@
-
 package com.example.mobileprogramming.navigation
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,13 +28,19 @@ import com.example.mobileprogramming.ui.explore.ExploreRoute
 import com.example.mobileprogramming.ui.explore.ExploreViewModel
 import com.example.mobileprogramming.ui.home.HomeRoute
 import com.example.mobileprogramming.ui.home.HomeViewModel
+import com.example.mobileprogramming.ui.profile.ProfileRoute
+import com.example.mobileprogramming.ui.profile.ProfileViewModel
 import com.example.mobileprogramming.ui.ticket.TicketScreen
+import com.example.mobileprogramming.ui.tickets.MyTicketsRoute
+import com.example.mobileprogramming.ui.tickets.MyTicketsViewModel
 
 @Composable
 fun QueueNavigation(
     homeViewModel: HomeViewModel,
     exploreViewModel: ExploreViewModel,
-    ticketViewModel: QueueTicketViewModel
+    ticketViewModel: QueueTicketViewModel,
+    myTicketsViewModel: MyTicketsViewModel, // NEW
+    profileViewModel: ProfileViewModel      // NEW
 ) {
     val navController = rememberNavController()
 
@@ -57,6 +65,27 @@ fun QueueNavigation(
                         .padding(horizontal = 16.dp)
                 ) {
                     Text("Explore Services")
+                }
+
+                // NEW: buttons to My Tickets and Profile
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { navController.navigate("my_tickets") },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("My Tickets")
+                    }
+                    OutlinedButton(
+                        onClick = { navController.navigate("profile") },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Profile")
+                    }
                 }
 
                 if (ticket != null) {
@@ -137,7 +166,6 @@ fun QueueNavigation(
             )
         }
 
-
         composable("ticket") {
 
             val service = ticket?.serviceId?.let {
@@ -153,5 +181,36 @@ fun QueueNavigation(
             )
         }
 
+        // NEW: My Tickets screen
+        composable("my_tickets") {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Button(
+                    onClick = { navController.navigateUp() },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Text("Back")
+                }
+                MyTicketsRoute(
+                    viewModel = myTicketsViewModel,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        // NEW: Profile screen
+        composable("profile") {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Button(
+                    onClick = { navController.navigateUp() },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Text("Back")
+                }
+                ProfileRoute(
+                    viewModel = profileViewModel,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 }
