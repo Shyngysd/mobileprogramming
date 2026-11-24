@@ -1,5 +1,6 @@
 package com.example.mobileprogramming.data.repository
 
+import com.example.mobileprogramming.data.model.ServiceCategory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -9,16 +10,20 @@ class DemoQueueServicesTest {
     fun demoServicesHaveStableIdsAndValidQueueData() {
         val services = DemoQueueServices.services
         val expectedNamesById = mapOf(
-            "student-service-center" to "Student Service Center",
-            "it-help-desk" to "IT Help Desk",
-            "library" to "Library",
-            "canteen" to "Canteen"
+            "city-clinic" to "City Clinic",
+            "smile-dental" to "Smile Dental Care",
+            "bank-branch" to "Bank Branch",
+            "public-service-center" to "Public Service Center",
+            "coffee-point" to "Coffee Point",
+            "burger-house" to "Burger House",
+            "barber-studio" to "Barber Studio",
+            "post-office" to "Post Office"
         )
 
         assertEquals(expectedNamesById.size, services.size)
         assertEquals(expectedNamesById, services.associate { it.id to it.name })
-        assertEquals(services.size, services.map { it.category }.toSet().size)
-        assertTrue(services.all { it.description.isNotBlank() && it.location.startsWith("Demo campus") })
+        assertEquals(ServiceCategory.entries.toSet(), services.map { it.category }.toSet())
+        assertTrue(services.all { it.description.isNotBlank() && it.location.endsWith("Demo City") })
         assertTrue(services.all { it.peopleInQueue >= 0 && it.averageServiceMinutes > 0 })
         assertTrue(services.map { it.peopleInQueue }.toSet().size > 1)
         assertTrue(services.map { it.averageServiceMinutes }.toSet().size > 1)

@@ -112,13 +112,13 @@ class HomeViewModelTest {
         repository.services.value = services
         viewModel = HomeViewModel(repository, SavedStateHandle())
 
-        viewModel.onSearchQueryChange("Help Desk")
+        viewModel.onSearchQueryChange("Barber")
         runCurrent()
-        assertEquals(listOf("it-help-desk"), viewModel.uiState.value.services.map { it.id })
+        assertEquals(listOf("barber-studio"), viewModel.uiState.value.services.map { it.id })
 
-        viewModel.onSearchQueryChange("  dInInG aReA  ")
+        viewModel.onSearchQueryChange("  fOoD cOuRt  ")
         runCurrent()
-        assertEquals(listOf("canteen"), viewModel.uiState.value.services.map { it.id })
+        assertEquals(listOf("burger-house"), viewModel.uiState.value.services.map { it.id })
 
         viewModel.onSearchQueryChange("unknown service")
         runCurrent()
@@ -141,15 +141,15 @@ class HomeViewModelTest {
         repository.services.value = DemoQueueServices.services
         val savedState = SavedStateHandle()
         viewModel = HomeViewModel(repository, savedState)
-        viewModel.onSearchQueryChange("  LIBRARY  ")
+        viewModel.onSearchQueryChange("  BARBER  ")
         runCurrent()
         viewModel.viewModelScope.cancel()
 
         val restoredState = SavedStateHandle(savedState.keys().associateWith { savedState.get<String>(it) })
         viewModel = HomeViewModel(repository, restoredState)
 
-        assertEquals("  LIBRARY  ", viewModel.uiState.value.searchQuery)
-        assertEquals(listOf("library"), viewModel.uiState.value.services.map { it.id })
+        assertEquals("  BARBER  ", viewModel.uiState.value.searchQuery)
+        assertEquals(listOf("barber-studio"), viewModel.uiState.value.services.map { it.id })
     }
 
     @Test
@@ -157,24 +157,24 @@ class HomeViewModelTest {
         repository.services.value = DemoQueueServices.services
         viewModel = HomeViewModel(repository, SavedStateHandle())
 
-        viewModel.onSearchQueryChange(" demo campus ")
-        viewModel.onCategoryChange(ServiceCategory.LIBRARY)
+        viewModel.onSearchQueryChange(" demo city ")
+        viewModel.onCategoryChange(ServiceCategory.BEAUTY)
         viewModel.onOpenOnlyChange(true)
         runCurrent()
-        assertEquals(listOf("library"), viewModel.uiState.value.services.map { it.id })
+        assertEquals(listOf("barber-studio"), viewModel.uiState.value.services.map { it.id })
 
-        viewModel.onSearchQueryChange("canteen")
+        viewModel.onSearchQueryChange("burger")
         runCurrent()
         assertTrue(viewModel.uiState.value.services.isEmpty())
 
-        viewModel.onCategoryChange(ServiceCategory.DINING)
+        viewModel.onCategoryChange(ServiceCategory.FOOD)
         runCurrent()
         assertTrue(viewModel.uiState.value.services.isEmpty())
         assertTrue(viewModel.uiState.value.hasUnfilteredServices)
 
         viewModel.onOpenOnlyChange(false)
         runCurrent()
-        assertEquals(listOf("canteen"), viewModel.uiState.value.services.map { it.id })
+        assertEquals(listOf("burger-house"), viewModel.uiState.value.services.map { it.id })
     }
 
     @Test
@@ -184,8 +184,8 @@ class HomeViewModelTest {
         val savedState = SavedStateHandle()
         viewModel = HomeViewModel(repository, savedState)
 
-        viewModel.onSearchQueryChange("canteen")
-        viewModel.onCategoryChange(ServiceCategory.DINING)
+        viewModel.onSearchQueryChange("burger")
+        viewModel.onCategoryChange(ServiceCategory.FOOD)
         viewModel.onOpenOnlyChange(true)
         runCurrent()
         assertTrue(viewModel.uiState.value.hasActiveFilters)
@@ -207,7 +207,7 @@ class HomeViewModelTest {
         assertEquals("", viewModel.uiState.value.searchQuery)
 
         repository.services.value = emptyList()
-        viewModel.onCategoryChange(ServiceCategory.LIBRARY)
+        viewModel.onCategoryChange(ServiceCategory.BEAUTY)
         runCurrent()
         assertTrue(viewModel.uiState.value.services.isEmpty())
         assertFalse(viewModel.uiState.value.hasUnfilteredServices)
@@ -236,11 +236,11 @@ class HomeViewModelTest {
     @Test
     fun refreshKeepsFilteredServicesOnFailureAndRetryPublishesNewData() = runTest {
         val demoServices = DemoQueueServices.services
-        val library = demoServices.first { it.id == "library" }
-        val updatedLibrary = library.copy(peopleInQueue = library.peopleInQueue + 1)
+        val barber = demoServices.first { it.id == "barber-studio" }
+        val updatedBarber = barber.copy(peopleInQueue = barber.peopleInQueue + 1)
         repository.services.value = demoServices
         viewModel = HomeViewModel(repository, SavedStateHandle())
-        viewModel.onSearchQueryChange("library")
+        viewModel.onSearchQueryChange("barber")
         runCurrent()
 
         val refresh = CompletableDeferred<Unit>()
@@ -250,26 +250,26 @@ class HomeViewModelTest {
 
         assertTrue(viewModel.uiState.value.isRefreshing)
         assertFalse(viewModel.uiState.value.isInitialLoading)
-        assertEquals(listOf(library), viewModel.uiState.value.services)
+        assertEquals(listOf(barber), viewModel.uiState.value.services)
 
         refresh.completeExceptionally(IllegalStateException("Demo refresh failed"))
         runCurrent()
 
         assertFalse(viewModel.uiState.value.isLoading)
         assertEquals(HomeLoadError.SERVICES_REFRESH_FAILED, viewModel.uiState.value.error)
-        assertEquals(listOf(library), viewModel.uiState.value.services)
+        assertEquals(listOf(barber), viewModel.uiState.value.services)
 
         repository.onRefresh = {
             repository.services.value = demoServices.map { service ->
-                if (service.id == library.id) updatedLibrary else service
+                if (service.id == barber.id) updatedBarber else service
             }
         }
         viewModel.retry()
         runCurrent()
 
         assertNull(viewModel.uiState.value.error)
-        assertEquals("library", viewModel.uiState.value.searchQuery)
-        assertEquals(listOf(updatedLibrary), viewModel.uiState.value.services)
+        assertEquals("barber", viewModel.uiState.value.searchQuery)
+        assertEquals(listOf(updatedBarber), viewModel.uiState.value.services)
     }
 
     private class FakeServiceRepository : ServiceRepository {

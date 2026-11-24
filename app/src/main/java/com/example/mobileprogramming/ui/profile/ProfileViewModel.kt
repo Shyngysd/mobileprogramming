@@ -21,9 +21,9 @@ class ProfileViewModel(
 
     private val _profile = MutableStateFlow(
         UserProfile(
-            name = "Student",
-            studentId = "240000000",
-            email = "student@sdu.edu.kz"
+            name = "Guest",
+            phone = "+7 700 000 00 00",
+            email = "guest@example.com"
         )
     )
     val profile: StateFlow<UserProfile> = _profile.asStateFlow()

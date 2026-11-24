@@ -59,7 +59,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        ProfileInfoRow(label = "Student ID", value = profile.studentId)
+        ProfileInfoRow(label = "Phone", value = profile.phone)
         ProfileInfoRow(label = "Email", value = profile.email)
         ProfileInfoRow(label = "Active tickets", value = activeTicketsCount.toString())
     }
@@ -95,9 +95,9 @@ private fun ProfileScreenPreview() {
     MobileprogrammingTheme {
         ProfileScreen(
             profile = UserProfile(
-                name = "Student",
-                studentId = "240000000",
-                email = "student@sdu.edu.kz"
+                name = "Guest",
+                phone = "+7 700 000 00 00",
+                email = "guest@example.com"
             ),
             activeTicketsCount = 2,
             onNameChange = {}

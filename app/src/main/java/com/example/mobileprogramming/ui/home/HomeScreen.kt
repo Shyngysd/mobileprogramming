@@ -54,6 +54,7 @@ import com.example.mobileprogramming.R
 import com.example.mobileprogramming.data.model.ServiceCategory
 import com.example.mobileprogramming.data.repository.DemoQueueServices
 import com.example.mobileprogramming.ui.components.ServiceCard
+import com.example.mobileprogramming.ui.components.categoryLabel
 import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -212,16 +213,10 @@ private fun ServiceFilters(
                 label = { Text(stringResource(R.string.home_category_all)) }
             )
             ServiceCategory.entries.forEach { category ->
-                val label = when (category) {
-                    ServiceCategory.STUDENT_SERVICES -> R.string.home_category_student_services
-                    ServiceCategory.IT_SUPPORT -> R.string.home_category_it_support
-                    ServiceCategory.LIBRARY -> R.string.home_category_library
-                    ServiceCategory.DINING -> R.string.home_category_dining
-                }
                 FilterChip(
                     selected = uiState.selectedCategory == category,
                     onClick = { onCategoryChange(category) },
-                    label = { Text(stringResource(label)) }
+                    label = { Text(stringResource(categoryLabel(category))) }
                 )
             }
         }
@@ -285,8 +280,8 @@ private fun HomeScreenPreview() = PreviewHomeScreen(
 private fun HomeScreenNoResultsPreview() = PreviewHomeScreen(
     HomeUiState(
         isLoading = false,
-        searchQuery = "Canteen",
-        selectedCategory = ServiceCategory.DINING,
+        searchQuery = "Burger",
+        selectedCategory = ServiceCategory.FOOD,
         openOnly = true,
         hasUnfilteredServices = true
     )

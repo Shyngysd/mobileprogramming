@@ -80,8 +80,7 @@ fun ServiceCard(
 @Composable
 private fun OpenServiceCardPreview() {
     val service = DemoQueueServices.services.first { it.isOpen }.copy(
-        name = "Student Service Center for Academic Records and Enrollment",
-        peopleInQueue = 1,
+        name = "Public Service Center for Documents, Certificates and Licenses",        peopleInQueue = 1,
         averageServiceMinutes = 1
     )
 
