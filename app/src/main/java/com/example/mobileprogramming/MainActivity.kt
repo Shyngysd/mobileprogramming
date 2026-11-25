@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import com.example.mobileprogramming.data.local.TicketStorage
 import com.example.mobileprogramming.navigation.QueueNavigation
 import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 import com.example.mobileprogramming.ui.explore.ExploreViewModel
@@ -24,7 +23,9 @@ class MainActivity : ComponentActivity() {
         AppContainer.serviceViewModelFactory(::ExploreViewModel)
     }
 
-    private val ticketViewModel: QueueTicketViewModel by viewModels()
+    private val ticketViewModel: QueueTicketViewModel by viewModels {
+        QueueTicketViewModel.Factory
+    }
 
     private val myTicketsViewModel: MyTicketsViewModel by viewModels {
         MyTicketsViewModel.Factory
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        AppContainer.ticketRepository.attachStorage(TicketStorage(applicationContext))
+        AppContainer.init(applicationContext)
 
         setContent {
             MobileprogrammingTheme {

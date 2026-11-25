@@ -1,43 +1,63 @@
-
 package com.example.mobileprogramming.ui.details
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.mobileprogramming.AppContainer
 import com.example.mobileprogramming.data.model.QueueService
-import com.example.mobileprogramming.data.model.QueueTicket
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.mobileprogramming.data.model.Ticket
+import com.example.mobileprogramming.data.repository.TicketRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-enum class JoinQueueResult {
-    SUCCESS,
-    ALREADY_HAS_TICKET,
-    SERVICE_CLOSED
-}
+class QueueTicketViewModel(
+    private val repository: TicketRepository
+) : ViewModel() {
 
-class QueueTicketViewModel : ViewModel() {
-
-    private val _ticket = MutableStateFlow<QueueTicket?>(null)
-
-    val ticket: StateFlow<QueueTicket?> = _ticket.asStateFlow()
-
-    fun joinQueue(service: QueueService): JoinQueueResult {
-
-        if (!service.isOpen) {
-            return JoinQueueResult.SERVICE_CLOSED
-        }
-
-        if (_ticket.value != null) {
-            return JoinQueueResult.ALREADY_HAS_TICKET
-        }
-
-        val ticketNumber = service.peopleInQueue + 1
-
-        _ticket.value = QueueTicket(
-            ticketNumber = ticketNumber,
-            serviceId = service.id,
-            serviceName = service.name
+    val tickets: StateFlow<List<Ticket>> = repository.getAllTicketsStream()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000L),
+            initialValue = emptyList()
         )
 
-        return JoinQueueResult.SUCCESS
+    private var isJoining = false
+
+    fun waitingTicketFor(serviceId: String): Ticket? =
+        tickets.value.firstOrNull { it.serviceId == serviceId && !it.isServed }
+
+    fun joinQueue(service: QueueService, onJoined: (ticketId: Int) -> Unit) {
+        if (!service.isOpen || isJoining) return
+
+        val existing = waitingTicketFor(service.id)
+        if (existing != null) {
+            onJoined(existing.id)
+            return
+        }
+
+        isJoining = true
+        viewModelScope.launch {
+            try {
+                val ticket = Ticket(
+                    serviceId = service.id,
+                    serviceName = service.name,
+                    number = repository.getNextNumber(),
+                    peopleAhead = service.peopleInQueue
+                )
+                val newId = repository.insertTicket(ticket)
+                onJoined(newId)
+            } finally {
+                isJoining = false
+            }
+        }
+    }
+
+    companion object {
+        val Factory = viewModelFactory {
+            initializer { QueueTicketViewModel(AppContainer.ticketRepository) }
+        }
     }
 }
