@@ -3,12 +3,19 @@ package com.example.mobileprogramming.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -27,41 +34,48 @@ fun ServiceCard(
     modifier: Modifier = Modifier
 ) {
     val waitMinutes = estimateWaitMinutes(service)
-    val status = if (service.isOpen) R.string.service_open else R.string.service_closed
 
     val content: @Composable ColumnScope.() -> Unit = {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(service.name, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    text = service.location,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(stringResource(status), style = MaterialTheme.typography.labelLarge)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CategoryIcon(category = service.category)
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(service.name, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = stringResource(categoryLabel(service.category)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                StatusBadge(isOpen = service.isOpen)
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            InfoRow(icon = Icons.Filled.LocationOn, text = service.location)
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = pluralStringResource(
                         R.plurals.service_people_waiting,
                         service.peopleInQueue,
                         service.peopleInQueue
                     ),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f)
                 )
                 if (waitMinutes != null) {
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.service_estimated_wait,
-                            waitMinutes,
-                            waitMinutes
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "~$waitMinutes min",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -70,9 +84,9 @@ fun ServiceCard(
 
     val cardModifier = modifier.fillMaxWidth()
     if (onClick == null) {
-        OutlinedCard(modifier = cardModifier, content = content)
+        ElevatedCard(modifier = cardModifier, content = content)
     } else {
-        OutlinedCard(onClick = onClick, modifier = cardModifier, content = content)
+        ElevatedCard(onClick = onClick, modifier = cardModifier, content = content)
     }
 }
 
@@ -80,7 +94,8 @@ fun ServiceCard(
 @Composable
 private fun OpenServiceCardPreview() {
     val service = DemoQueueServices.services.first { it.isOpen }.copy(
-        name = "Public Service Center for Documents, Certificates and Licenses",        peopleInQueue = 1,
+        name = "Public Service Center for Documents, Certificates and Licenses",
+        peopleInQueue = 1,
         averageServiceMinutes = 1
     )
 
