@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,8 +26,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,11 +44,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -53,19 +60,24 @@ import androidx.compose.ui.unit.dp
 import com.example.mobileprogramming.R
 import com.example.mobileprogramming.data.model.ServiceCategory
 import com.example.mobileprogramming.data.repository.DemoQueueServices
+import com.example.mobileprogramming.ui.components.QueueTopBar
 import com.example.mobileprogramming.ui.components.ServiceCard
+import com.example.mobileprogramming.ui.components.categoryLabel
 import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
+    waitingTicketsCount: Int,
     onServiceClick: ((String) -> Unit)?,
     onRefresh: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onCategoryChange: (ServiceCategory?) -> Unit,
     onOpenOnlyChange: (Boolean) -> Unit,
     onResetFilters: () -> Unit,
+    onExploreClick: () -> Unit,
+    onTicketsClick: () -> Unit,
+    onProfileClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -76,13 +88,19 @@ fun HomeScreen(
         topBar = {
             Surface {
                 Column {
-                    TopAppBar(
-                        title = { Text(stringResource(R.string.app_name)) },
+                    QueueTopBar(
+                        title = stringResource(R.string.app_name),
                         actions = {
                             if (!uiState.isLoading && error == null) {
-                                TextButton(onClick = onRefresh) {
-                                    Text(stringResource(R.string.home_refresh))
+                                IconButton(onClick = onRefresh) {
+                                    Icon(
+                                        Icons.Filled.Refresh,
+                                        contentDescription = stringResource(R.string.home_refresh)
+                                    )
                                 }
+                            }
+                            IconButton(onClick = onProfileClick) {
+                                Icon(Icons.Filled.Person, contentDescription = "Profile")
                             }
                         }
                     )
@@ -92,7 +110,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
             }
@@ -109,16 +127,31 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                ) {
+                HomeHeader(
+                    waitingTicketsCount = waitingTicketsCount,
+                    onExploreClick = onExploreClick,
+                    onTicketsClick = onTicketsClick
+                )
+            }
+
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = stringResource(R.string.home_demo_data),
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium
+                        text = "Places nearby",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f)
                     )
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ) {
+                        Text(
+                            text = stringResource(R.string.home_demo_data),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
                 }
             }
 
@@ -189,6 +222,77 @@ fun HomeScreen(
 }
 
 @Composable
+private fun HomeHeader(
+    waitingTicketsCount: Int,
+    onExploreClick: () -> Unit,
+    onTicketsClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Skip the line", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = "See how busy a place is and take a ticket before you go.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuickAction(
+                    icon = Icons.Filled.Search,
+                    label = "Explore",
+                    onClick = onExploreClick,
+                    modifier = Modifier.weight(1f)
+                )
+                QuickAction(
+                    icon = Icons.AutoMirrored.Filled.List,
+                    label = if (waitingTicketsCount > 0) {
+                        "My tickets ($waitingTicketsCount)"
+                    } else {
+                        "My tickets"
+                    },
+                    onClick = onTicketsClick,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickAction(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(icon, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@Composable
 private fun ServiceFilters(
     uiState: HomeUiState,
     onCategoryChange: (ServiceCategory?) -> Unit,
@@ -212,16 +316,10 @@ private fun ServiceFilters(
                 label = { Text(stringResource(R.string.home_category_all)) }
             )
             ServiceCategory.entries.forEach { category ->
-                val label = when (category) {
-                    ServiceCategory.STUDENT_SERVICES -> R.string.home_category_student_services
-                    ServiceCategory.IT_SUPPORT -> R.string.home_category_it_support
-                    ServiceCategory.LIBRARY -> R.string.home_category_library
-                    ServiceCategory.DINING -> R.string.home_category_dining
-                }
                 FilterChip(
                     selected = uiState.selectedCategory == category,
                     onClick = { onCategoryChange(category) },
-                    label = { Text(stringResource(label)) }
+                    label = { Text(stringResource(categoryLabel(category))) }
                 )
             }
         }
@@ -285,8 +383,8 @@ private fun HomeScreenPreview() = PreviewHomeScreen(
 private fun HomeScreenNoResultsPreview() = PreviewHomeScreen(
     HomeUiState(
         isLoading = false,
-        searchQuery = "Canteen",
-        selectedCategory = ServiceCategory.DINING,
+        searchQuery = "Burger",
+        selectedCategory = ServiceCategory.FOOD,
         openOnly = true,
         hasUnfilteredServices = true
     )
@@ -327,12 +425,16 @@ private fun PreviewHomeScreen(uiState: HomeUiState) {
     MobileprogrammingTheme {
         HomeScreen(
             uiState = uiState,
+            waitingTicketsCount = 1,
             onServiceClick = null,
             onRefresh = {},
             onSearchQueryChange = {},
             onCategoryChange = {},
             onOpenOnlyChange = {},
-            onResetFilters = {}
+            onResetFilters = {},
+            onExploreClick = {},
+            onTicketsClick = {},
+            onProfileClick = {}
         )
     }
 }

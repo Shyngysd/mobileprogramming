@@ -21,19 +21,19 @@ class ProfileViewModel(
 
     private val _profile = MutableStateFlow(
         UserProfile(
-            name = "Student",
-            studentId = "240000000",
-            email = "student@sdu.edu.kz"
+            name = "Guest",
+            phone = "+7 700 000 00 00",
+            email = "guest@example.com"
         )
     )
     val profile: StateFlow<UserProfile> = _profile.asStateFlow()
 
-    val activeTicketsCount: StateFlow<Int> = ticketRepository.tickets
-        .map { tickets -> tickets.size }
+    val activeTicketsCount: StateFlow<Int> = ticketRepository.getAllTicketsStream()
+        .map { tickets -> tickets.count { !it.isServed } }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = ticketRepository.tickets.value.size
+            started = SharingStarted.WhileSubscribed(5_000L),
+            initialValue = 0
         )
 
     fun updateName(newName: String) {
