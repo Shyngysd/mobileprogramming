@@ -1,96 +1,144 @@
-
 package com.example.mobileprogramming.ui.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mobileprogramming.data.model.QueueService
-import com.example.mobileprogramming.data.model.QueueTicket
+import com.example.mobileprogramming.data.model.Ticket
+import com.example.mobileprogramming.data.model.estimateWaitMinutes
+import com.example.mobileprogramming.data.repository.DemoQueueServices
+import com.example.mobileprogramming.ui.components.CategoryIcon
+import com.example.mobileprogramming.ui.components.EmptyState
+import com.example.mobileprogramming.ui.components.InfoRow
+import com.example.mobileprogramming.ui.components.QueueTopBar
+import com.example.mobileprogramming.ui.components.StatCard
+import com.example.mobileprogramming.ui.components.StatusBadge
+import com.example.mobileprogramming.ui.components.categoryLabel
+import com.example.mobileprogramming.ui.theme.MobileprogrammingTheme
 
 @Composable
 fun ServiceDetailsScreen(
     service: QueueService?,
-    ticket: QueueTicket?,
+    waitingTicket: Ticket?,
     onBackClick: () -> Unit,
     onJoinQueueClick: () -> Unit,
-    onViewTicketClick: () -> Unit
+    onViewTicketClick: (Int) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Button(onClick = onBackClick) {
-            Text("Back")
-        }
-
+    Scaffold(
+        topBar = { QueueTopBar(title = service?.name ?: "Place", onBackClick = onBackClick) }
+    ) { innerPadding ->
         if (service == null) {
-            Text("Service not found")
+            EmptyState(
+                icon = Icons.Filled.Info,
+                title = "Place not found",
+                message = "Go back and choose another place.",
+                modifier = Modifier.padding(innerPadding)
+            )
         } else {
-            Text("Service Details")
-
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(service.name)
-                    Text(service.description)
-                    Text("Location: ${service.location}")
-
-                    if (service.isOpen) {
-                        Text("Status: Open")
-                    } else {
-                        Text("Status: Closed")
-                    }
-
-                    Text("People in queue: ${service.peopleInQueue}")
-
-                    val waitMinutes =
-                        service.peopleInQueue.toLong() *
-                                service.averageServiceMinutes.toLong()
-
-                    if (
-                        service.isOpen &&
-                        service.peopleInQueue >= 0 &&
-                        service.averageServiceMinutes > 0
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Estimated wait: $waitMinutes minutes")
-                    } else {
-                        Text("Estimated wait: Not available")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CategoryIcon(category = service.category, size = 56.dp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(service.name, style = MaterialTheme.typography.titleLarge)
+                                Text(
+                                    text = stringResource(categoryLabel(service.category)),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            StatusBadge(isOpen = service.isOpen)
+                        }
+                        Text(service.description, style = MaterialTheme.typography.bodyLarge)
+                        InfoRow(icon = Icons.Filled.LocationOn, text = service.location)
                     }
                 }
-            }
 
-            if (ticket?.serviceId == service.id) {
-                Text("You already have a ticket for this service.")
-
-                Button(
-                    onClick = onViewTicketClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("View My Ticket #${ticket.ticketNumber}")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StatCard(
+                        value = service.peopleInQueue.toString(),
+                        label = "people in queue",
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        value = estimateWaitMinutes(service)?.toString() ?: "—",
+                        label = "minutes to wait",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
-            } else if (ticket != null) {
-                Text("You already have an active ticket for another service.")
-            } else {
-                Button(
-                    onClick = onJoinQueueClick,
-                    enabled = service.isOpen,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Join Queue")
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (waitingTicket != null) {
+                    Text(
+                        text = "You are already in this queue.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Button(
+                        onClick = { onViewTicketClick(waitingTicket.id) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("View my ticket #${waitingTicket.number}")
+                    }
+                } else {
+                    Button(
+                        onClick = onJoinQueueClick,
+                        enabled = service.isOpen,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (service.isOpen) "Join queue" else "Closed now")
+                    }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 720)
+@Composable
+private fun ServiceDetailsScreenPreview() {
+    MobileprogrammingTheme {
+        ServiceDetailsScreen(
+            service = DemoQueueServices.services.first(),
+            waitingTicket = null,
+            onBackClick = {},
+            onJoinQueueClick = {},
+            onViewTicketClick = {}
+        )
     }
 }

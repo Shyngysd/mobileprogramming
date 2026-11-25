@@ -1,27 +1,14 @@
 package com.example.mobileprogramming.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.mobileprogramming.AppContainer
-import com.example.mobileprogramming.ui.details.JoinQueueResult
 import com.example.mobileprogramming.ui.details.QueueTicketViewModel
 import com.example.mobileprogramming.ui.details.ServiceDetailsScreen
 import com.example.mobileprogramming.ui.explore.ExploreRoute
@@ -39,178 +26,91 @@ fun QueueNavigation(
     homeViewModel: HomeViewModel,
     exploreViewModel: ExploreViewModel,
     ticketViewModel: QueueTicketViewModel,
-    myTicketsViewModel: MyTicketsViewModel, // NEW
-    profileViewModel: ProfileViewModel      // NEW
+    myTicketsViewModel: MyTicketsViewModel,
+    profileViewModel: ProfileViewModel
 ) {
     val navController = rememberNavController()
 
-    val ticket by ticketViewModel.ticket.collectAsStateWithLifecycle()
+    val tickets by ticketViewModel.tickets.collectAsStateWithLifecycle()
+    val waitingCount = tickets.count { !it.isServed }
 
     NavHost(
         navController = navController,
-        startDestination = "home",
-        modifier = Modifier.statusBarsPadding()
+        startDestination = "home"
     ) {
 
         composable("home") {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Button(
-                    onClick = {
-                        navController.navigate("explore")
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text("Explore Services")
-                }
-
-                // NEW: buttons to My Tickets and Profile
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { navController.navigate("my_tickets") },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("My Tickets")
-                    }
-                    OutlinedButton(
-                        onClick = { navController.navigate("profile") },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Profile")
-                    }
-                }
-
-                if (ticket != null) {
-                    Button(
-                        onClick = {
-                            navController.navigate("ticket")
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        Text("My Active Ticket #${ticket?.ticketNumber}")
-                    }
-                }
-
-                HomeRoute(
-                    viewModel = homeViewModel,
-                    onServiceClick = { serviceId ->
-                        navController.navigate("details/$serviceId")
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            HomeRoute(
+                viewModel = homeViewModel,
+                waitingTicketsCount = waitingCount,
+                onServiceClick = { serviceId -> navController.navigate("details/$serviceId") },
+                onExploreClick = { navController.navigate("explore") },
+                onTicketsClick = { navController.navigate("my_tickets") },
+                onProfileClick = { navController.navigate("profile") }
+            )
         }
 
         composable("explore") {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Button(
-                    onClick = {
-                        navController.navigateUp()
-                    }
-                ) {
-                    Text("Back to Home")
-                }
-
-                ExploreRoute(
-                    viewModel = exploreViewModel
-                )
-            }
+            ExploreRoute(
+                viewModel = exploreViewModel,
+                onBackClick = { navController.navigateUp() },
+                onServiceClick = { serviceId -> navController.navigate("details/$serviceId") }
+            )
         }
 
         composable(
             route = "details/{serviceId}",
-            arguments = listOf(
-                navArgument("serviceId") {
-                    type = NavType.StringType
-                }
-            )
+            arguments = listOf(navArgument("serviceId") { type = NavType.StringType })
         ) { backStackEntry ->
-
-            val serviceId =
-                backStackEntry.arguments?.getString("serviceId")
-
-            val service = serviceId?.let {
-                AppContainer.serviceRepository.getServiceById(it)
-            }
+            val serviceId = backStackEntry.arguments?.getString("serviceId")
+            val service = serviceId?.let { AppContainer.serviceRepository.getServiceById(it) }
+            val waitingTicket = tickets.firstOrNull { it.serviceId == serviceId && !it.isServed }
 
             ServiceDetailsScreen(
                 service = service,
-                ticket = ticket,
-                onBackClick = {
-                    navController.navigateUp()
-                },
+                waitingTicket = waitingTicket,
+                onBackClick = { navController.navigateUp() },
                 onJoinQueueClick = {
                     if (service != null) {
-                        val result = ticketViewModel.joinQueue(service)
-
-                        if (result == JoinQueueResult.SUCCESS) {
-                            navController.navigate("ticket")
+                        ticketViewModel.joinQueue(service) { ticketId ->
+                            navController.navigate("ticket/$ticketId")
                         }
                     }
                 },
-                onViewTicketClick = {
-                    navController.navigate("ticket")
-                }
+                onViewTicketClick = { ticketId -> navController.navigate("ticket/$ticketId") }
             )
         }
 
-        composable("ticket") {
-
-            val service = ticket?.serviceId?.let {
-                AppContainer.serviceRepository.getServiceById(it)
-            }
+        composable(
+            route = "ticket/{ticketId}",
+            arguments = listOf(navArgument("ticketId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val ticketId = backStackEntry.arguments?.getInt("ticketId") ?: 0
+            val ticket = tickets.firstOrNull { it.id == ticketId }
+            val service = ticket?.let { AppContainer.serviceRepository.getServiceById(it.serviceId) }
 
             TicketScreen(
                 ticket = ticket,
                 service = service,
-                onBackClick = {
-                    navController.navigateUp()
-                }
+                onBackClick = { navController.navigateUp() },
+                onServedClick = myTicketsViewModel::markServed,
+                onMyTicketsClick = { navController.navigate("my_tickets") }
             )
         }
 
-        // NEW: My Tickets screen
         composable("my_tickets") {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Button(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    Text("Back")
-                }
-                MyTicketsRoute(
-                    viewModel = myTicketsViewModel,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            MyTicketsRoute(
+                viewModel = myTicketsViewModel,
+                onBackClick = { navController.navigateUp() },
+                onTicketClick = { ticketId -> navController.navigate("ticket/$ticketId") }
+            )
         }
 
-        // NEW: Profile screen
         composable("profile") {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Button(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                ) {
-                    Text("Back")
-                }
-                ProfileRoute(
-                    viewModel = profileViewModel,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            ProfileRoute(
+                viewModel = profileViewModel,
+                onBackClick = { navController.navigateUp() }
+            )
         }
     }
 }
