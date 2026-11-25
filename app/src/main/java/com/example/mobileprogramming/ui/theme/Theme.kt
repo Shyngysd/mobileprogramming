@@ -15,45 +15,60 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 private val LightColorScheme = lightColorScheme(
-    primary = Teal40,
+    primary = Indigo40,
     onPrimary = Color.White,
-    primaryContainer = Teal90,
-    onPrimaryContainer = Teal10,
-    secondary = SlateTeal40,
+    primaryContainer = Indigo90,
+    onPrimaryContainer = Indigo10,
+    secondary = Slate40,
     onSecondary = Color.White,
-    secondaryContainer = SlateTeal90,
-    onSecondaryContainer = SlateTeal10,
-    tertiary = Orange40,
+    secondaryContainer = Slate95,
+    onSecondaryContainer = Slate10,
+    tertiary = Amber50,
     onTertiary = Color.White,
-    tertiaryContainer = Orange90,
-    onTertiaryContainer = Orange10,
+    tertiaryContainer = Amber90,
+    onTertiaryContainer = Amber10,
+    error = Red40,
+    onError = Color.White,
+    errorContainer = Red95,
+    onErrorContainer = Red20,
     background = LightBackground,
+    onBackground = LightOnBackground,
     surface = LightBackground,
+    onSurface = LightOnBackground,
     surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant
+    onSurfaceVariant = LightOnSurfaceVariant,
+    outline = LightOutline,
+    outlineVariant = LightOutline
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Teal80,
-    onPrimary = Teal20,
-    primaryContainer = Teal30,
-    onPrimaryContainer = Teal90,
-    secondary = SlateTeal80,
-    secondaryContainer = SlateTeal30,
-    onSecondaryContainer = SlateTeal90,
-    tertiary = Orange80,
-    tertiaryContainer = Orange30,
-    onTertiaryContainer = Orange90,
+    primary = Indigo80,
+    onPrimary = Indigo20,
+    primaryContainer = Indigo30,
+    onPrimaryContainer = Indigo90,
+    secondary = Slate80,
+    secondaryContainer = Slate30,
+    onSecondaryContainer = Slate90,
+    tertiary = Amber80,
+    tertiaryContainer = Amber30,
+    onTertiaryContainer = Amber90,
+    error = Red80,
+    errorContainer = Red30,
+    onErrorContainer = Red95,
     background = DarkBackground,
+    onBackground = DarkOnBackground,
     surface = DarkBackground,
+    onSurface = DarkOnBackground,
     surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    outline = DarkOutline,
+    outlineVariant = DarkOutline
 )
 
 private val QueueShapes = Shapes(
     small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(24.dp)
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp)
 )
 
 @Composable
