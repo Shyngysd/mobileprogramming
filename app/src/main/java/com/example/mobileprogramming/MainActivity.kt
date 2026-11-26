@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val exploreViewModel: ExploreViewModel by viewModels {
-        AppContainer.serviceViewModelFactory(::ExploreViewModel)
+        ExploreViewModel.Factory
     }
 
     private val ticketViewModel: QueueTicketViewModel by viewModels {
