@@ -7,11 +7,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.mobileprogramming.data.local.DataStorePreferencesRepository
 import com.example.mobileprogramming.data.local.QueueDatabase
+import com.example.mobileprogramming.data.local.dataStore
 import com.example.mobileprogramming.data.repository.InMemoryServiceRepository
 import com.example.mobileprogramming.data.repository.OfflineTicketRepository
 import com.example.mobileprogramming.data.repository.ServiceRepository
 import com.example.mobileprogramming.data.repository.TicketRepository
+import com.example.mobileprogramming.data.repository.UserPreferencesRepository
 
 object AppContainer {
     val serviceRepository: ServiceRepository = InMemoryServiceRepository()
@@ -19,10 +22,16 @@ object AppContainer {
     lateinit var ticketRepository: TicketRepository
         private set
 
+    lateinit var userPreferencesRepository: UserPreferencesRepository
+        private set
+
     fun init(context: Context) {
         if (!::ticketRepository.isInitialized) {
             val database = QueueDatabase.getDatabase(context.applicationContext)
             ticketRepository = OfflineTicketRepository(database.ticketDao())
+        }
+        if (!::userPreferencesRepository.isInitialized) {
+            userPreferencesRepository = DataStorePreferencesRepository(context.applicationContext.dataStore)
         }
     }
 

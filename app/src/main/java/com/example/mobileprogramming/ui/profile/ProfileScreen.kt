@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,10 +41,13 @@ fun ProfileRoute(
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val activeTickets by viewModel.activeTicketsCount.collectAsStateWithLifecycle()
+    val isDarkTheme by viewModel.isDarkTheme.collectAsStateWithLifecycle()
     ProfileScreen(
         profile = profile,
         activeTicketsCount = activeTickets,
+        isDarkTheme = isDarkTheme,
         onNameChange = viewModel::updateName,
+        onDarkThemeChange = viewModel::setDarkTheme,
         onBackClick = onBackClick
     )
 }
@@ -51,7 +56,9 @@ fun ProfileRoute(
 fun ProfileScreen(
     profile: UserProfile,
     activeTicketsCount: Int,
+    isDarkTheme: Boolean,
     onNameChange: (String) -> Unit,
+    onDarkThemeChange: (Boolean) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -106,6 +113,28 @@ fun ProfileScreen(
                 label = "active tickets",
                 modifier = Modifier.fillMaxWidth()
             )
+
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Dark theme", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "Saved on this device",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = isDarkTheme,
+                        onCheckedChange = onDarkThemeChange
+                    )
+                }
+            }
         }
     }
 }
@@ -121,7 +150,9 @@ private fun ProfileScreenPreview() {
                 email = "guest@example.com"
             ),
             activeTicketsCount = 2,
+            isDarkTheme = false,
             onNameChange = {},
+            onDarkThemeChange = {},
             onBackClick = {}
         )
     }
