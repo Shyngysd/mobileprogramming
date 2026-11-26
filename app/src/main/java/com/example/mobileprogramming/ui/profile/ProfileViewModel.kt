@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -45,8 +46,18 @@ class ProfileViewModel(
             initialValue = false
         )
 
+    init {
+        viewModelScope.launch {
+            val savedName = preferencesRepository.userName.first()
+            _profile.update { current -> current.copy(name = savedName) }
+        }
+    }
+
     fun updateName(newName: String) {
         _profile.update { current -> current.copy(name = newName) }
+        viewModelScope.launch {
+            preferencesRepository.saveUserName(newName)
+        }
     }
 
     fun setDarkTheme(enabled: Boolean) {
