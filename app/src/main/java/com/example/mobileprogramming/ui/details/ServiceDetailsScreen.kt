@@ -22,9 +22,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.mobileprogramming.data.model.QueueService
 import com.example.mobileprogramming.data.model.Ticket
 import com.example.mobileprogramming.data.model.estimateWaitMinutes
@@ -66,6 +70,19 @@ fun ServiceDetailsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                    if (service.imageUrl.isNotBlank()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(service.imageUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = service.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                        )
+                    }
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)

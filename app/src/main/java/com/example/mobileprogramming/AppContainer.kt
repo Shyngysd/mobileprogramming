@@ -10,14 +10,15 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.mobileprogramming.data.local.DataStorePreferencesRepository
 import com.example.mobileprogramming.data.local.QueueDatabase
 import com.example.mobileprogramming.data.local.dataStore
-import com.example.mobileprogramming.data.repository.InMemoryServiceRepository
+import com.example.mobileprogramming.data.remote.PlacesApi
+import com.example.mobileprogramming.data.repository.NetworkServiceRepository
 import com.example.mobileprogramming.data.repository.OfflineTicketRepository
 import com.example.mobileprogramming.data.repository.ServiceRepository
 import com.example.mobileprogramming.data.repository.TicketRepository
 import com.example.mobileprogramming.data.repository.UserPreferencesRepository
 
 object AppContainer {
-    val serviceRepository: ServiceRepository = InMemoryServiceRepository()
+    val serviceRepository: ServiceRepository = NetworkServiceRepository(PlacesApi.retrofitService)
 
     lateinit var ticketRepository: TicketRepository
         private set

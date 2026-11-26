@@ -1,13 +1,13 @@
 <resources>
     <string name="app_name">Queue</string>
-    <string name="home_demo_data">Demo data</string>
+    <string name="home_demo_data">OpenStreetMap</string>
     <string name="home_loading">Loading places…</string>
     <string name="home_refreshing">Refreshing places…</string>
     <string name="home_refresh">Refresh</string>
-    <string name="home_load_error">Could not load places.</string>
-    <string name="home_refresh_error">Could not refresh places. Previous data is still available.</string>
+    <string name="home_load_error">Could not load places. Check your internet connection and try again.</string>
+    <string name="home_refresh_error">Could not refresh places. Showing the last loaded data.</string>
     <string name="home_retry">Retry</string>
-    <string name="home_no_services">No places available.</string>
+    <string name="home_no_services">No places available right now. Try again later.</string>
     <string name="home_search_services">Search places</string>
     <string name="home_clear_search">Clear search</string>
     <string name="home_no_search_results">No places found</string>

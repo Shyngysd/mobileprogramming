@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -184,7 +185,7 @@ fun HomeScreen(
                             HomeLoadError.SERVICES_REFRESH_FAILED -> R.string.home_refresh_error
                         }
                         Text(stringResource(message), color = MaterialTheme.colorScheme.error)
-                        TextButton(onClick = onRefresh) {
+                        Button(onClick = onRefresh) {
                             Text(stringResource(R.string.home_retry))
                         }
                     }
