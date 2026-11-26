@@ -8,5 +8,6 @@ data class QueueService(
     val category: ServiceCategory,
     val peopleInQueue: Int,
     val averageServiceMinutes: Int,
-    val isOpen: Boolean
+    val isOpen: Boolean,
+    val imageUrl: String = ""
 )
